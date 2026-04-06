@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import uuid
 from database.core import Base
 from datetime import UTC, datetime, date, time
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, Date, Boolean, Enum, Float, Table, Column
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, Date, Boolean, Enum, Float, Table, Column, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.options import Status, TariffType, PaymentType, Role
@@ -30,7 +31,9 @@ parent_contract = Table(
 class Kid(Base):
     __tablename__ = 'kids'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True,
+                                          default=uuid.uuid4)
+
     first_name: Mapped[str] = mapped_column(String(260), nullable=False)
     middle_name: Mapped[str] = mapped_column(String(260), nullable=False)
     family_name: Mapped[str] = mapped_column(String(260), nullable=False)
@@ -62,7 +65,8 @@ class Kid(Base):
 class Staff(Base):
     __tablename__ = 'staff'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True,
+                                          default=uuid.uuid4)
     first_name: Mapped[str] = mapped_column(String(260), nullable=False)
     middle_name: Mapped[str] = mapped_column(String(260), nullable=False)
     family_name: Mapped[str] = mapped_column(String(260), nullable=False)
@@ -85,7 +89,8 @@ class Staff(Base):
 class Parent(Base):
     __tablename__ = 'parents'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True,
+                                          default=uuid.uuid4)
     first_name: Mapped[str] = mapped_column(String(260), nullable=False)
     middle_name: Mapped[str] = mapped_column(String(260), nullable=False)
     family_name: Mapped[str] = mapped_column(String(260), nullable=False)
@@ -102,7 +107,8 @@ class Parent(Base):
 class Transport(Base):
     __tablename__ = 'transport'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id:  Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True,
+                                          default=uuid.uuid4)
     unique_transport_id: Mapped[str] = mapped_column(String(90), nullable=False)
     transport_picture: Mapped[str] = mapped_column(String(400), nullable=False)
     driver: Mapped[int] = mapped_column(ForeignKey('staff.id'), index=True, nullable=False)
@@ -119,7 +125,8 @@ class Transport(Base):
 class Contract(Base):
     __tablename__ = 'contracts'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True,
+                                          default=uuid.uuid4)
     created_at: Mapped[date] = mapped_column(Date, nullable=False)
     updated_at: Mapped[date] = mapped_column(Date, nullable=False)
     date_of_payment: Mapped[date] = mapped_column(Date, nullable=False)
@@ -136,7 +143,8 @@ class Contract(Base):
 class Teacher(Base):
     __tablename__ = 'teachers'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True,
+                                          default=uuid.uuid4)
     first_name: Mapped[str] = mapped_column(String(260), nullable=False)
     middle_name: Mapped[str] = mapped_column(String(260), nullable=False)
     family_name: Mapped[str] = mapped_column(String(260), nullable=False)
@@ -152,7 +160,8 @@ class Teacher(Base):
 class School(Base):
     __tablename__ = 'schools'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True,
+                                          default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(260), nullable=False)
 
     children: Mapped[list[Kid]] = relationship(back_populates='rel_school')
@@ -162,7 +171,8 @@ class School(Base):
 class Violation(Base):
     __tablename__ = 'violations'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True,
+                                          default=uuid.uuid4)
     recipient: Mapped[int] = mapped_column(ForeignKey('staff.id'), nullable=False, index=True)
     date: Mapped[date] = mapped_column(Date, nullable=False)
     nature: Mapped[str] = mapped_column(String(260), nullable=False)
@@ -176,10 +186,13 @@ class Admin():
     
     
     
+    
+    
 class User(Base):
     __tablename__ = "users"
     
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True,
+                                          default=uuid.uuid4)
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     role: Mapped[Role] = mapped_column(Enum(Role))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
