@@ -23,7 +23,7 @@ class TariffType(enum.Enum):
     DISCOUNTED = "Льготный"
     
     
-class Role(enum.Enum):
+class Role(str, enum.Enum):
     DRIVER = 'Водитель'
     BABYSITTER = 'Вожатая'
     
