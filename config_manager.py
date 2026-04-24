@@ -15,7 +15,7 @@ class Config(BaseSettings):
     access_token_lifetime: int = 30
 
     model_config = SettingsConfigDict(
-        env_file=join(dirname(dirname(__file__)), '.env'),
+        env_file=join(dirname(__file__), '.env'),
         env_file_encoding='utf-8'
     )
 

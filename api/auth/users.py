@@ -1,11 +1,9 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordRequestForm
-
-from fastapi import Depends
 
 from sqlalchemy import select, func
 
-from auth.password_hashing import (
+from api.auth.utils import (
     hash_password,
     verify_password,
     create_access_token, 
@@ -13,18 +11,16 @@ from auth.password_hashing import (
     oauth2_scheme
 )
 
-from auth.schemas import UserCreate, UserPrivate, UserPublic, Token
-from auth.models import User
-
-from database.models import *
+from api.auth.schemas import UserCreate, UserPrivate, UserPublic, Token
+from api.auth.models import User
+from config_manager import config
 
 from typing import Annotated
 
 from datetime import timedelta
 
-from config_manager import config
 
-from auth.dependecies import db_connection
+from api.dependecies import db_connection
 
 import uuid
 
@@ -33,7 +29,7 @@ user = APIRouter()
 
 
 
-@user.post("",
+@user.post("/create",
           response_model=UserPrivate,
           status_code=status.HTTP_201_CREATED,
 )
@@ -50,7 +46,6 @@ async def create_user(user: UserCreate, db: db_connection):
         
     new_user = User(
         username=user.username.lower(),
-        role=user.role,
         password=hash_password(user.password)
     )    
 

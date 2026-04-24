@@ -29,13 +29,3 @@ class Base(DeclarativeBase):
 async def get_db():
     async with session() as db:
         yield db
-        
-        
-        
-async def create_tables():
-    async with engine.begin() as connect:
-        await connect.run_sync(Base.metadata.create_all)
-        
-async def drop_tables():
-    async with engine.begin() as connect:
-        await connect.run_sync(Base.metadata.drop_all)

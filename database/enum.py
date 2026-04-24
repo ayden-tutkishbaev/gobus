@@ -1,6 +1,4 @@
 import enum
-from sqlalchemy import Enum
-
 
 # TBD
 class Status(enum.Enum):
@@ -26,6 +24,4 @@ class TariffType(enum.Enum):
 class Role(str, enum.Enum):
     DRIVER = 'Водитель'
     BABYSITTER = 'Вожатая'
-    
-    
-    
+    ADMIN = 'Администратор'
