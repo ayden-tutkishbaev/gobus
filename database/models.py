@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from database.core import Base
 from datetime import UTC, datetime, date, time
-from zoneinfo import ZoneInfo
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, Date, Boolean, Enum, Float, Table, Column
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.enum import Status, TariffType, PaymentType, Role
-from database.tools import tashkent_now
+from database.tools import tashkent_now, tashkent_today
 
 
 parent_kid = Table(
@@ -31,7 +30,7 @@ class Kid(Base):
     first_name: Mapped[str] = mapped_column(String(260), nullable=False)
     middle_name: Mapped[str] = mapped_column(String(260), nullable=False)
     family_name: Mapped[str] = mapped_column(String(260), nullable=False)
-    profile_picture: Mapped[str] = mapped_column(String(400), nullable=False)
+    profile_picture: Mapped[str] = mapped_column(String(400), nullable=True)
     phone_number: Mapped[str | None] = mapped_column(String(90), nullable=True)
     home_address: Mapped[str] = mapped_column(String(260), nullable=False)
 
@@ -63,7 +62,7 @@ class Staff(Base):
     first_name: Mapped[str] = mapped_column(String(260), nullable=False)
     middle_name: Mapped[str] = mapped_column(String(260), nullable=False)
     family_name: Mapped[str] = mapped_column(String(260), nullable=False)
-    profile_picture: Mapped[str] = mapped_column(String(400), nullable=False)
+    profile_picture: Mapped[str] = mapped_column(String(400), nullable=True)
     staff_type: Mapped[Role] = mapped_column(Enum(Role))
     birth_date: Mapped[date] = mapped_column(Date, nullable=False)
     phone_number: Mapped[str] = mapped_column(String(90), nullable=False)
@@ -117,8 +116,8 @@ class Contract(Base):
     __tablename__ = 'contracts'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    created_at: Mapped[date] = mapped_column(Date, nullable=False)
-    updated_at: Mapped[date] = mapped_column(Date, nullable=False)
+    created_at: Mapped[date] = mapped_column(Date, nullable=False, default=tashkent_today)
+    updated_at: Mapped[date] = mapped_column(Date, nullable=False, default=tashkent_today)
     date_of_payment: Mapped[date] = mapped_column(Date, nullable=False)
     date_of_end: Mapped[date] = mapped_column(Date, nullable=False)
     type_of_payment: Mapped[PaymentType] = mapped_column(Enum(PaymentType))
