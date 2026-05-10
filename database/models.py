@@ -40,6 +40,7 @@ class Kid(Base):
     transport: Mapped[int] = mapped_column(ForeignKey('transport.id'), nullable=False, index=True)
     babysitter: Mapped[int] = mapped_column(ForeignKey('staff.id'), nullable=False, index=True)
     teacher: Mapped[int | None] = mapped_column(ForeignKey('teachers.id'), nullable=True, index=True)
+    route: Mapped[int] = mapped_column(ForeignKey('routes.id'), nullable=False, index=True)
 
     birth_date: Mapped[date] = mapped_column(Date)
     active: Mapped[bool] = mapped_column(Boolean)
@@ -47,12 +48,14 @@ class Kid(Base):
     
     parents: Mapped[list[Parent]] = relationship(secondary=parent_kid, back_populates='kids')
     
-    rel_school: Mapped[School] = relationship(back_populates='children')
+    rel_route: Mapped[Route] = relationship(back_populates='kids')
+    rel_school: Mapped[School] = relationship(back_populates='kids_rel')
     rel_contract: Mapped[Contract] = relationship(back_populates='kids')
     rel_driver: Mapped[Staff] = relationship(back_populates='kids_rel', foreign_keys=[driver])
     rel_transport: Mapped[Transport] = relationship(back_populates='kids_rel')
     rel_babysitter: Mapped[Staff] = relationship(back_populates='kids_rel_b', foreign_keys=[babysitter])
     rel_teacher: Mapped[Teacher] = relationship(back_populates='kids')
+    
 
 
 class Staff(Base):
@@ -67,9 +70,11 @@ class Staff(Base):
     birth_date: Mapped[date] = mapped_column(Date, nullable=False)
     phone_number: Mapped[str] = mapped_column(String(90), nullable=False)
     salary: Mapped[int] = mapped_column(Integer, nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_active: Mapped[bool] = mapped_column(Boolean)
     registered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=tashkent_now)
 
+    route_rel_driver: Mapped[list[Route]] = relationship(back_populates='rel_driver', foreign_keys='Route.driver')        # ← add this
+    route_rel_babysitter: Mapped[list[Route]] = relationship(back_populates='rel_babysitter', foreign_keys='Route.babysitter') 
     transport_rel_driver: Mapped[list[Transport]] = relationship(back_populates='rel_driver', foreign_keys='Transport.driver')
     transport_rel_babysitter: Mapped[list[Transport]] = relationship(back_populates='rel_babysitter', foreign_keys='Transport.babysitter')
     violations: Mapped[list[Violation]] = relationship(back_populates='rel_recipient')
@@ -100,7 +105,7 @@ class Transport(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     unique_transport_id: Mapped[str] = mapped_column(String(90), nullable=False)
-    transport_picture: Mapped[str] = mapped_column(String(400), nullable=False)
+    transport_picture: Mapped[str] = mapped_column(String(400), nullable=True)
     driver: Mapped[int] = mapped_column(ForeignKey('staff.id'), index=True, nullable=False)
     babysitter: Mapped[int] = mapped_column(ForeignKey('staff.id'), index=True, nullable=False)
     registered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=tashkent_now)
@@ -109,6 +114,7 @@ class Transport(Base):
     rel_driver: Mapped[Staff] = relationship(back_populates='transport_rel_driver', foreign_keys=[driver])
     rel_babysitter: Mapped[Staff] = relationship(back_populates='transport_rel_babysitter', foreign_keys=[babysitter])
 
+    route_rel: Mapped[list[Route]] = relationship(back_populates='rel_transport')
     kids_rel: Mapped[list[Kid]] = relationship(back_populates='rel_transport')
 
 
@@ -141,7 +147,7 @@ class Teacher(Base):
     registered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=tashkent_now)
     active: Mapped[bool] = mapped_column(Boolean)
 
-    rel_school: Mapped[School] = relationship(back_populates='teachers')
+    rel_school: Mapped[School] = relationship(back_populates='teachers_rel')
     kids: Mapped[list[Kid]] = relationship(back_populates='rel_teacher')
 
 
@@ -151,8 +157,8 @@ class School(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(260), nullable=False)
 
-    children: Mapped[list[Kid]] = relationship(back_populates='rel_school')
-    teachers: Mapped[list[Teacher]] = relationship(back_populates='rel_school')
+    kids_rel: Mapped[list[Kid]] = relationship(back_populates='rel_school')
+    teachers_rel: Mapped[list[Teacher]] = relationship(back_populates='rel_school')
 
 
 class Violation(Base):
@@ -166,3 +172,19 @@ class Violation(Base):
 
     rel_recipient: Mapped[Staff] = relationship(back_populates='violations')
     
+    
+class Route(Base):
+    __tablename__ = 'routes'
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(260))
+    duration: Mapped[int] = mapped_column(index=True, nullable=False)
+    driver: Mapped[int] = mapped_column(ForeignKey('staff.id'), nullable=False, index=True) # -> rel1
+    babysitter: Mapped[int] = mapped_column(ForeignKey('staff.id'), nullable=False, index=True) # -> rel2
+    transport: Mapped[int] = mapped_column(ForeignKey('transport.id'), nullable=False, index=True) # -> rel 3
+    active: Mapped[bool] = mapped_column(Boolean)
+    
+    kids: Mapped[list[Kid]] = relationship(back_populates='rel_route')
+    rel_driver: Mapped[Staff] = relationship(back_populates='route_rel_driver', foreign_keys=[driver])      # ← add this
+    rel_babysitter: Mapped[Staff] = relationship(back_populates='route_rel_babysitter', foreign_keys=[babysitter]) 
+    rel_transport: Mapped[Transport] = relationship(back_populates='route_rel')

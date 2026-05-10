@@ -88,10 +88,10 @@ async def add_staff(
         first_name=parent_data.first_name,
         middle_name=parent_data.middle_name,
         phone_number=parent_data.phone_number,
-        profile_picture='PICTURE',
         staff_type=parent_data.staff_type,
         birth_date=parent_data.birth_date,
         salary=parent_data.salary,
+        active=True
     )
     
     db.add(new_staff)
@@ -102,16 +102,18 @@ async def add_staff(
 
 
 @admin.patch(
-    path='/add-staff-picture'
+    path='/{staff_id}/add-staff-picture'
 )
 async def add_staff_picture(
     admin: IsAdmin,
     db: db_connection,
-    parent_data: StaffBase,
+    staff_id: int,
     uploaded_file: UploadFile
 ):
     content = await uploaded_file.read()
     
+    query = await db.execute(select(Staff).where(Staff.id == staff_id))
+    chosen_staff = query.scalars().first()
     
     if len(content) > config.max_upload_size_bytes:
         raise HTTPException(
@@ -121,13 +123,24 @@ async def add_staff_picture(
         
     
     try:
-        new_filename = await run_in_threadpool(process_profile_image, content)
+        new_filename = await run_in_threadpool(process_profile_image, "staff", content)
     except UnidentifiedImageError as error:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid image file."
         ) from error
+        
+    old_filename = chosen_staff.profile_picture
     
+    chosen_staff.profile_picture = new_filename
+
+    await db.commit()
+    await db.refresh(chosen_staff)
+
+    if chosen_staff.profile_picture:
+        delete_profile_image("staff", old_filename)
+
+    return chosen_staff
 
 
 
@@ -143,7 +156,6 @@ async def add_transport(
     
     new_transport = Transport(
         unique_transport_id=parent_data.unique_transport_id,
-        transport_picture=parent_data.transport_picture,
         driver=parent_data.driver,
         babysitter=parent_data.babysitter,
         registered_at=parent_data.registered_at,
@@ -179,6 +191,47 @@ async def add_contract(
     await db.refresh(new_contract)
     
     return new_contract
+
+
+@admin.patch(
+    path='/{transport_id}/add-transport-picture'
+)
+async def add_transport_picture(
+    admin: IsAdmin,
+    db: db_connection,
+    transport_id: int,
+    uploaded_file: UploadFile
+):
+    content = await uploaded_file.read()
+    
+    query = await db.execute(select(Transport).where(Transport.id == transport_id))
+    chosen_transport = query.scalars().first()
+    
+    if len(content) > config.max_upload_size_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File is too large"
+        )
+        
+    try:
+        new_filename = await run_in_threadpool(process_profile_image, "transport", content, False)
+    except UnidentifiedImageError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid image file."
+        ) from error
+        
+    old_filename = chosen_transport.transport_picture
+    
+    chosen_transport.transport_picture = new_filename
+
+    await db.commit()
+    await db.refresh(chosen_transport)
+
+    if chosen_transport.transport_picture:
+        delete_profile_image("staff", old_filename)
+
+    return chosen_transport
 
 
 @admin.post(
@@ -246,8 +299,7 @@ async def add_kid(
         teacher=parent_data.teacher,
         birth_date=parent_data.birth_date,
         active=True, #remove after migrations
-        transport=1, #remove after migrations
-        profile_picture='(blank).jpg'
+        transport=parent_data.transport,
     )
     
     if parent_data.parents:
@@ -261,6 +313,47 @@ async def add_kid(
     await db.refresh(new_kid)
     
     return new_kid
+
+
+@admin.patch(
+    path='/{kid_id}/add-kid-picture'
+)
+async def add_kid_picture(
+    admin: IsAdmin,
+    db: db_connection,
+    kid_id: int,
+    uploaded_file: UploadFile
+):
+    content = await uploaded_file.read()
+    
+    query = await db.execute(select(Kid).where(Kid.id == kid_id))
+    chosen_kid = query.scalars().first()
+    
+    if len(content) > config.max_upload_size_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File is too large"
+        )
+        
+    try:
+        new_filename = await run_in_threadpool(process_profile_image, "kids", content)
+    except UnidentifiedImageError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid image file."
+        ) from error
+        
+    old_filename = chosen_kid.profile_picture
+    
+    chosen_kid.profile_picture = new_filename
+
+    await db.commit()
+    await db.refresh(chosen_kid)
+
+    if chosen_kid.profile_picture:
+        delete_profile_image("staff", old_filename)
+
+    return chosen_kid
 
 
 @admin.patch(

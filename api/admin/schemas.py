@@ -132,6 +132,7 @@ class KidBase(BaseModel):
     driver: int
     babysitter: int 
     teacher: int
+    transport: int
     
     birth_date: date
     
