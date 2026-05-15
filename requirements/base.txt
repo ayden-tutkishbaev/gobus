@@ -1,0 +1,13 @@
+fastapi[standard]
+SQLAlchemy==2.0.46
+asyncpg==0.31.0
+alembic==1.18.4
+PyJWT==2.12.1
+pwdlib[argon2]
+cffi==2.0.0
+pydantic-settings==2.13.1
+tzdata==2026.1
+uvicorn==0.44.0
+python-multipart==0.0.26
+phonenumbers
+pillow==12.2.0
