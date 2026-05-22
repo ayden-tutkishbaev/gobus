@@ -19,7 +19,7 @@ class Parent(Base):
     last_name: Mapped[str] = mapped_column(String(260), nullable=False)
     first_name: Mapped[str] = mapped_column(String(260), nullable=False)
     middle_name: Mapped[str] = mapped_column(String(260), nullable=False)
-    phone_number: Mapped[str | None] = mapped_column(String(90), nullable=True)
+    phone_number: Mapped[str] = mapped_column(String(90), nullable=False)
     document_id: Mapped[str | None] = mapped_column(String(90), nullable=True)  
     
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -40,7 +40,7 @@ class Contract(Base):
     parent_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("parents.id"), nullable=False, index=True)
     created_at: Mapped[date] = mapped_column(Date, nullable=False, default=tashkent_today)
     signed_at: Mapped[date] = mapped_column(Date, nullable=False)
-    updated_at: Mapped[date] = mapped_column(Date, nullable=False, default=tashkent_today)
+    updated_at: Mapped[date] = mapped_column(Date, nullable=False, default=tashkent_today, onupdate=tashkent_today)
     expires_at: Mapped[date] = mapped_column(Date, nullable=False)
     date_of_payment: Mapped[date] = mapped_column(Date, nullable=False)
     type_of_payment: Mapped[PaymentType] = mapped_column(Enum(PaymentType))

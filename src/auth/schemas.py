@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 import uuid
-from src.auth.enum import Role
+from src.auth.enum import UserRole
 
 
 class UserBase(BaseModel):
@@ -10,7 +10,7 @@ class UserBase(BaseModel):
     
 class UserCreate(UserBase):
     password: str = Field(min_length=1)
-    role: Role
+    role: UserRole
 
 
     

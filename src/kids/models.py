@@ -1,10 +1,11 @@
 from src.database.core import Base
 import uuid
-from datetime import date
+from datetime import date, datetime
 
-from sqlalchemy import ForeignKey, String, Date, UUID
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, Date, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.database.tools import tashkent_now
 from src.parents.models import parent_kid
 
 
@@ -32,6 +33,8 @@ class Kid(Base):
     
     parents: Mapped[list["Parent"]] = relationship(secondary=parent_kid, back_populates='kids')
 
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     home_address: Mapped[str] = mapped_column(String(260), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=tashkent_now)
 
 # TODO: REL

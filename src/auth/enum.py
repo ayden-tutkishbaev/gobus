@@ -7,4 +7,6 @@ class Role(str, enum.Enum):
     SUPERADMIN = 'superadmin'
     
     
-
+class UserRole(str, enum.Enum):
+    USER = 'user'
+    ADMIN = 'admin'

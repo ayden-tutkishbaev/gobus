@@ -1,10 +1,8 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from src.auth.schemas import UserCreate, UserPrivate
-from src.core.security import hash_password
 from src.dependencies import db_connection
 from sqlalchemy import select
 from src.auth.models import User
-from src.admin.schemas import UserUpdate
+from src.admin.schemas.users import UserUpdate
 from src.admin.permissions import require_role
 import uuid
 

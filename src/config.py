@@ -18,7 +18,7 @@ class Config(BaseSettings):
     algorithm: str = "HS256"
     access_token_lifetime: int = 30
     
-    max_upload_size_bytes: int = 5 * 1024 * 1024
+    max_upload_size_bytes: int = 10 * 1024 * 1024
 
     model_config = SettingsConfigDict(
         env_file=join(dirname(dirname(abspath(__file__))), '.env'),

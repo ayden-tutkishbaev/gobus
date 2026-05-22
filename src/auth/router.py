@@ -126,3 +126,15 @@ async def get_user(user_id: uuid.UUID, db: db_connection):
         return user
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                         detail="User not found!")
+    
+    
+@user.patch("/{user_id}/deactivate")
+async def deactivate_user(user_id: uuid.UUID, db: db_connection):
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="User not found!")  
+    user.is_active = False
+    await db.commit()
+    return {"User has been deactivated"}

@@ -2,13 +2,13 @@ import enum
 
 
 class PaymentType(str, enum.Enum):
-    CASH = "Наличный"
-    CASHLESS = "Безналичный"
-    POS_TERMINAL = "POS терминал"
-    INSTALLMENTS = "В рассрочку"
+    CASH = "cash"
+    CASHLESS = "cashless"
+    POS_TERMINAL = "pos_terminal"
+    INSTALLMENTS = "installments"
     
     
 class TariffType(str, enum.Enum):
-    MONTHLY = "Помесячный"
-    YEARLY = "Погодовой"
-    DISCOUNTED = "Льготный"
+    MONTHLY = "monthly"
+    YEARLY = "yearly"
+    DISCOUNTED = "discounted"
