@@ -13,12 +13,12 @@ class KidBase(AppBaseModel):
     first_name: str = Field(min_length=1, max_length=260)
     middle_name: str = Field(min_length=1, max_length=260)
     date_of_birth: date
-    home_address: str
+    home_address: str = Field(min_length=1, max_length=260)
     
     
     
 class KidCreate(KidBase):
-    phone_number: Optional[str] = None
+    phone_number: Optional[str] = Field(None, min_length=1, max_length=90)
     school_id: Optional[uuid.UUID] = None
     route_id: Optional[uuid.UUID] = None
     contract_id: Optional[uuid.UUID] = None
@@ -31,8 +31,8 @@ class KidUpdate(AppBaseModel):
     last_name: str | None = Field(None, min_length=1, max_length=260)
     first_name: str | None = Field(None, min_length=1, max_length=260)
     middle_name: str | None = Field(None, min_length=1, max_length=260)
-    phone_number: str | None = None
-    home_address: str | None = None
+    phone_number: str | None = Field(None, min_length=1, max_length=90)
+    home_address: str | None =  Field(min_length=1, max_length=260)
     
     school_id: uuid.UUID | None = None
     route_id: uuid.UUID | None = None

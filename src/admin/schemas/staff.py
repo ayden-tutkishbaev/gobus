@@ -11,7 +11,7 @@ class StaffBase(AppBaseModel):
     last_name: str = Field(min_length=1, max_length=260)
     first_name: str = Field(min_length=1, max_length=260)
     middle_name: str = Field(min_length=1, max_length=260)
-    phone_number: str
+    phone_number: str = Field(min_length=1, max_length=90)
     staff_type: StaffRole
     
     

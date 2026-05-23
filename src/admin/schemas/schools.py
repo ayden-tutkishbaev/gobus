@@ -16,7 +16,7 @@ class SchoolBase(AppBaseModel):
 
 class SchoolCreate(SchoolBase):
     geo_latitude: float
-    geo_longitude: float  
+    geo_longitude: float
     
     
 class SchoolResponse(SchoolBase):

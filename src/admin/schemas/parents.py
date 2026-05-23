@@ -16,14 +16,14 @@ class ParentBase(AppBaseModel):
 
 class ParentCreate(ParentBase):
     document_id: str = Field(min_length=5, max_length=90)
-    home_address: str
+    home_address: str = Field(min_length=1, max_length=260)
     
     
 class ParentResponse(ParentBase):
     id: uuid.UUID
     is_active: bool
     registered_at: datetime
-    home_address: str
+    home_address: str = Field(min_length=1, max_length=260)
     profile_photo_url: str | None = None
     
     

@@ -10,7 +10,7 @@ from src.schema import AppBaseModel
     
 class TransportBase(AppBaseModel):
     unique_transport_id: str = Field(min_length=1, max_length=90)
-    model: str
+    model: str = Field(min_length=1, max_length=90)
     
     
 class TransportCreate(TransportBase): 

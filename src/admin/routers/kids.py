@@ -26,6 +26,7 @@ async def add_kid(
     parent_data: KidCreate,
 ):
     
+    
     new_kid = Kid(
         last_name=parent_data.last_name,
         first_name=parent_data.first_name,
@@ -40,10 +41,22 @@ async def add_kid(
     )
     
     if parent_data.parents:
-        parents = await db.execute(
+        result = await db.execute(
             select(Parent).where(Parent.id.in_(parent_data.parents))
         )
-        new_kid.parents = parents.scalars().all()
+        
+        found_parents = result.scalars().all()
+        
+        found_ids = {p.id for p in found_parents}
+        missing_ids = set(parent_data.parents) - found_ids
+
+        if missing_ids:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Parents not found: {[str(i) for i in missing_ids]}"
+            )
+
+        new_kid.parents = found_parents
     
     db.add(new_kid)
     await db.commit()

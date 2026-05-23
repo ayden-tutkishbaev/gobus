@@ -10,7 +10,7 @@ class TeacherBase(AppBaseModel):
     last_name: str = Field(min_length=1, max_length=260)
     first_name: str = Field(min_length=1, max_length=260)
     middle_name: str = Field(min_length=1, max_length=260)
-    phone_number: str
+    phone_number: str = Field(min_length=1, max_length=90)
     
     
 class TeacherCreate(TeacherBase):
@@ -21,7 +21,7 @@ class TeacherUpdate(AppBaseModel):
     last_name: str | None = Field(None, min_length=1, max_length=260)
     first_name: str | None = Field(None, min_length=1, max_length=260)
     middle_name: str | None = Field(None, min_length=1, max_length=260)
-    phone_number: str | None = None
+    phone_number: str | None = Field(min_length=1, max_length=90)
     school_id: uuid.UUID | None = None
     
     

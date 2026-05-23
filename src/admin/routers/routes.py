@@ -8,6 +8,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from src.routes.models import Route
+from src.staff.models import Staff
+from src.staff.enum import StaffRole
 
 
 admin_route = APIRouter()
@@ -22,6 +24,20 @@ async def add_route(
     db: db_connection,
     route_data: RouteCreate,
 ):
+    babysitter = await db.execute(select(Staff).where(Staff.id == route_data.babysitter_id))
+    driver = await db.execute(select(Staff).where(Staff.id == route_data.driver_id))
+    
+    if not driver:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Driver not found")
+    
+    if not not babysitter:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Babysitter not found")
+    
+    if babysitter.scalars().first().staff_type != StaffRole.BABYSITTER or driver.scalars().first().staff_type != StaffRole.DRIVER:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Incorrectly assigned role!")
     
     new_route = Route(
         name=route_data.name,
@@ -30,6 +46,7 @@ async def add_route(
         babysitter_id=route_data.babysitter_id,
         transport_id=route_data.transport_id
     )
+    
     
     db.add(new_route)
     await db.commit()

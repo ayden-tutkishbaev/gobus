@@ -1,6 +1,6 @@
 import uuid
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from src.schema import AppBaseModel
 from src.routes.enum import Status
@@ -30,6 +30,13 @@ class RouteCreate(RouteBase):
     driver_id: uuid.UUID | None = None       
     babysitter_id: uuid.UUID | None = None   
     transport_id: uuid.UUID | None = None    
+    
+    
+    @model_validator(mode="before")
+    def ids_difference_required(cls, values):
+        if values.get("babysitter_id") == values.get("driver_id"):
+            raise ValueError("Babysitter and driver cannot be a single person!")
+        return values
     
     
 class RouteUpdate(AppBaseModel):

@@ -18,8 +18,10 @@ class User(Base):
     role: Mapped[Role] = mapped_column(Enum(Role), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=tashkent_now)
-    username: Mapped[str] = mapped_column(String(50), nullable=False)
+    username: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     last_login: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=tashkent_now, nullable=True)
     
     # created_by_UUID: Mapped[] # TODO: THINK 
+    
+    
     
