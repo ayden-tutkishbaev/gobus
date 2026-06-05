@@ -3,6 +3,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from src.admin.permissions import require_role
 from src.admin.schemas.routes import RouteCreate, RouteUpdate, RouteResponse, RouteListResponse
+from src.auth.enum import Role
 from src.dependencies import db_connection
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -10,15 +11,20 @@ from sqlalchemy.orm import selectinload
 from src.routes.models import Route
 from src.staff.models import Staff
 from src.staff.enum import StaffRole
+from src.auth.services import http_bearer
 
 
-admin_route = APIRouter()
+admin_route = APIRouter(
+    dependencies=[
+        Depends(http_bearer),
+        Depends(require_role(Role.SUPERADMIN, Role.ADMIN)), 
+    ]
+)
 
 
 
 @admin_route.post(
     path='/routes',
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def add_route(
     db: db_connection,
@@ -57,7 +63,6 @@ async def add_route(
 
 @admin_route.patch(
     path="/routes/{route_id}",
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def edit_route(
     db: db_connection,
@@ -87,7 +92,6 @@ async def edit_route(
 @admin_route.get(
     path="/routes",
     response_model=list[RouteListResponse],
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def get_all_routes(
     db: db_connection,
@@ -101,7 +105,6 @@ async def get_all_routes(
 @admin_route.get(
     path="/routes/{route_id}",
     response_model=RouteResponse,
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def get_route(
     route_id: uuid.UUID,
@@ -121,7 +124,6 @@ async def get_route(
 
 @admin_route.patch(
     path="/routes/{route_id}/deactivate",
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def deactivate_route(
     db: db_connection,

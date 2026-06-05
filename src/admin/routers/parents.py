@@ -3,17 +3,23 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from src.admin.permissions import require_role
 from src.admin.schemas.parents import ParentCreate, ParentUpdate, ParentResponse
+from src.auth.enum import Role
 from src.dependencies import db_connection
 from sqlalchemy import select
 from src.parents.models import Parent
+from src.auth.services import http_bearer
 
 
-admin_parent = APIRouter()
+admin_parent = APIRouter(
+    dependencies=[
+        Depends(http_bearer),
+        Depends(require_role(Role.SUPERADMIN, Role.ADMIN)), 
+    ]
+)
 
 
 @admin_parent.post(
     path='/parents',
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def add_parent(
     db: db_connection,
@@ -37,7 +43,6 @@ async def add_parent(
 @admin_parent.get(
     path="/parents",
     response_model=list[ParentResponse],
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def get_all_parents(
     db: db_connection,
@@ -51,7 +56,6 @@ async def get_all_parents(
 @admin_parent.get(
     path="/parents/{parent_id}",
     response_model=ParentResponse,
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def get_parent(
     parent_id: uuid.UUID,
@@ -69,8 +73,6 @@ async def get_parent(
 
 @admin_parent.patch(
     path="/parents/{parent_id}",
-    dependencies=[Depends(require_role("superadmin", "admin"))]
-
 )
 async def edit_parents(
     db: db_connection,
@@ -99,7 +101,6 @@ async def edit_parents(
 
 @admin_parent.patch(
     path="/parents/{parent_id}/deactivate",
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def deactivate_parent(
     db: db_connection,

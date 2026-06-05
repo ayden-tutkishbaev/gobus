@@ -3,20 +3,25 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from src.admin.permissions import require_role
 from src.admin.schemas.teachers import TeacherCreate, TeacherUpdate, TeacherResponse, TeacherListResponse
+from src.auth.enum import Role
 from src.dependencies import db_connection
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
-
+from src.auth.services import http_bearer
 
 from src.schools.models import Teacher
 
 
-admin_teacher = APIRouter()
+admin_teacher = APIRouter(
+    dependencies=[
+        Depends(http_bearer),
+        Depends(require_role(Role.SUPERADMIN, Role.ADMIN)), 
+    ]
+)
 
 
 @admin_teacher.post(
     path='/teachers',
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def add_teacher(
     db: db_connection,
@@ -39,7 +44,6 @@ async def add_teacher(
 
 @admin_teacher.patch(
     path="/teachers/{teacher_id}",
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def edit_teacher(db: db_connection,
     data_edited: TeacherUpdate, 
@@ -68,7 +72,6 @@ async def edit_teacher(db: db_connection,
 @admin_teacher.get(
     path="/teachers",
     response_model=list[TeacherListResponse],
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def get_all_teachers(
     db: db_connection,
@@ -82,7 +85,6 @@ async def get_all_teachers(
 @admin_teacher.get(
     path="/teachers/{teacher_id}",
     response_model=TeacherResponse,
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def get_teacher(
     teacher_id: uuid.UUID,
@@ -100,7 +102,6 @@ async def get_teacher(
 
 @admin_teacher.patch(
     path="/teacher/{teacher_id}/deactivate",
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def deactivate_teacher(
     db: db_connection,

@@ -3,6 +3,7 @@ import uuid
 from PIL import UnidentifiedImageError
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from starlette.concurrency import run_in_threadpool
+from src.auth.enum import Role
 from src.config import config
 from src.admin.image_utils import delete_profile_image, process_image
 from src.admin.permissions import require_role
@@ -12,14 +13,19 @@ from sqlalchemy import select
 from src.kids.models import Kid
 from src.parents.models import Parent
 from sqlalchemy.orm import selectinload
+from src.auth.services import http_bearer
 
 
-admin_kid = APIRouter()
+admin_kid = APIRouter(
+    dependencies=[
+        Depends(http_bearer),
+        Depends(require_role(Role.SUPERADMIN, Role.ADMIN)), 
+    ]
+)
 
 
 @admin_kid.post(
     path='/kids',
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def add_kid(
     db: db_connection,
@@ -67,7 +73,6 @@ async def add_kid(
 
 @admin_kid.patch(
     path='/kids/{kid_id}/photo',
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def add_kid_picture(
     db: db_connection,
@@ -112,9 +117,7 @@ async def add_kid_picture(
     return chosen_kid
 
 
-@admin_kid.patch(path='/kids/{kid_id}',
-             dependencies=[Depends(require_role("superadmin", "admin"))]
-)
+@admin_kid.patch(path='/kids/{kid_id}')
 async def update_kid(
     kid_id: uuid.UUID,
     data_edited: KidUpdate,
@@ -149,7 +152,7 @@ async def update_kid(
 
 @admin_kid.get(path="/kids", 
                response_model=list[KidsListResponse],
-                dependencies=[Depends(require_role("superadmin", "admin"))])
+)
 async def get_kids(
     db: db_connection, 
     limit: int = 20, 
@@ -165,8 +168,7 @@ async def get_kids(
 
 
 @admin_kid.get(path="/kids/{kid_id}", 
-               response_model=KidResponse,
-               dependencies=[Depends(require_role("superadmin", "admin"))])
+               response_model=KidResponse,)
 async def get_kid(
     kid_id: uuid.UUID, 
     db: db_connection

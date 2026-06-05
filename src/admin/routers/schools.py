@@ -3,18 +3,24 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from src.admin.permissions import require_role
 from src.admin.schemas.schools import SchoolCreate, SchoolResponse, SchoolUpdate
+from src.auth.enum import Role
 from src.dependencies import db_connection
 from sqlalchemy import select
 
 from src.schools.models import School
+from src.auth.services import http_bearer
 
 
-admin_school = APIRouter()
+admin_school = APIRouter(
+    dependencies=[
+        Depends(http_bearer),
+        Depends(require_role(Role.SUPERADMIN, Role.ADMIN)), 
+    ]
+)
 
 
 @admin_school.post(
     path='/schools',
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def add_school(
     db: db_connection,
@@ -37,7 +43,6 @@ async def add_school(
 @admin_school.get(
     path="/schools",
     response_model=list[SchoolResponse],
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def get_schools(
     db: db_connection,
@@ -51,7 +56,6 @@ async def get_schools(
 @admin_school.get(
     path="/schools/{school_id}",
     response_model=SchoolResponse,
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def get_school(
     school_id: uuid.UUID,
@@ -69,7 +73,6 @@ async def get_school(
     
 @admin_school.patch(
     path="/schools/{school_id}",
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def edit_school(
     db: db_connection,
@@ -98,7 +101,6 @@ async def edit_school(
 
 @admin_school.patch(
     path="/schools/{school_id}/deactivate",
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def deactivate_school(
     db: db_connection,

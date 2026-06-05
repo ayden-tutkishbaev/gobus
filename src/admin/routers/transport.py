@@ -3,6 +3,7 @@ import uuid
 from PIL import UnidentifiedImageError
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from starlette.concurrency import run_in_threadpool
+from src.auth.enum import Role
 from src.config import config
 from src.admin.image_utils import delete_profile_image, process_image
 from src.admin.permissions import require_role
@@ -12,14 +13,19 @@ from sqlalchemy import select
 from src.routes.models import Transport
 from src.routes.enum import Status
 from sqlalchemy.orm import selectinload
+from src.auth.services import http_bearer
 
 
-admin_transport = APIRouter()
+admin_transport = APIRouter(
+    dependencies=[
+        Depends(http_bearer),
+        Depends(require_role(Role.SUPERADMIN, Role.ADMIN)), 
+    ]
+)
 
 
 @admin_transport.post(
     path='/transport',
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def add_transport(
     db: db_connection,
@@ -42,7 +48,6 @@ async def add_transport(
 
 @admin_transport.patch(
     path='/transport/{transport_id}/photo',
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def add_transport_picture(
     db: db_connection,
@@ -87,7 +92,6 @@ async def add_transport_picture(
 @admin_transport.get(
     path="/transport",
     response_model=list[TransportResponse],
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def get_all_transports(
     db: db_connection,
@@ -101,7 +105,6 @@ async def get_all_transports(
 @admin_transport.get(
     path="/transport/{transport_id}",
     response_model=TransportResponse,
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def get_transport(
     db: db_connection,
@@ -119,8 +122,6 @@ async def get_transport(
 
 @admin_transport.patch(
     path="/transport/{transport_id}",
-    dependencies=[Depends(require_role("superadmin", "admin"))]
-
 )
 async def edit_transport(
     db: db_connection,
@@ -149,7 +150,6 @@ async def edit_transport(
 
 @admin_transport.patch(
     path="/transport/{transport_id}/deactivate",
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def deactivate_transport(
     db: db_connection,

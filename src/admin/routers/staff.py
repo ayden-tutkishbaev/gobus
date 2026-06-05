@@ -3,6 +3,7 @@ import uuid
 from PIL import UnidentifiedImageError
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from starlette.concurrency import run_in_threadpool
+from src.auth.enum import Role
 from src.config import config
 from src.admin.image_utils import delete_profile_image, process_image
 from src.admin.permissions import require_role
@@ -12,14 +13,19 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from src.staff.models import Staff
+from src.auth.services import http_bearer
 
 
-admin_staff = APIRouter()
+admin_staff = APIRouter(
+    dependencies=[
+        Depends(http_bearer),
+        Depends(require_role(Role.SUPERADMIN, Role.ADMIN)), 
+    ]
+)
 
 
 @admin_staff.post(
     path='/staff',
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def add_staff(
     db: db_connection,
@@ -44,7 +50,6 @@ async def add_staff(
 
 @admin_staff.patch(
     path='/staff/{staff_id}/photo',
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def add_staff_picture(
     db: db_connection,
@@ -89,7 +94,6 @@ async def add_staff_picture(
 
 @admin_staff.patch(
     path="/staff/{staff_id}",
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def edit_staff(
     db: db_connection,
@@ -119,7 +123,6 @@ async def edit_staff(
 @admin_staff.get(
     path="/staff",
     response_model=list[StaffResponse],
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def get_all_staff(
     db: db_connection,
@@ -133,7 +136,6 @@ async def get_all_staff(
 @admin_staff.get(
     path="/staff/{staff_id}",
     response_model=StaffResponse,
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def get_staff(
     staff_id: uuid.UUID,
@@ -151,7 +153,6 @@ async def get_staff(
 
 @admin_staff.patch(
     path="/staff/{staff_id}/deactivate",
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def deactivate_staff(
     db: db_connection,

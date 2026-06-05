@@ -16,6 +16,8 @@ from src.admin.routers.transport import admin_transport
 from src.admin.routers.schedules import admin_schedule
 
 from src.admin.routers.superadmin import superadmin  
+from src.database.redis import init_redis
+import src.database.redis as redis_state
 
 import uvicorn
 
@@ -28,8 +30,12 @@ async def lifespan(app: FastAPI):
     # await drop_tables()
     await create_tables()
     await add_superadmin()
+    
+    redis_state.redis_client = await init_redis()
     print("Database has begun its operation!")
     yield
+    
+    await redis_state.redis_client.aclose()
     print("OFF")
     
 
@@ -49,5 +55,5 @@ app.include_router(admin_schedule, prefix="/api/v1/admins", tags=['Admins'])
 
 
 if __name__ == '__main__':
-    uvicorn.run("main:app")
+    uvicorn.run("main:app", reload=True)
     

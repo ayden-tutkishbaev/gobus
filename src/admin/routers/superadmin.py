@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends
+from src.auth.enum import Role
 from src.dependencies import db_connection
 from sqlalchemy import select
 from src.auth.models import User
@@ -6,13 +7,18 @@ from src.admin.schemas.users import UserUpdate
 from src.admin.permissions import require_role
 import uuid
 
+from src.auth.services import http_bearer
 
-superadmin = APIRouter()
+superadmin = APIRouter(
+    dependencies=[
+        Depends(http_bearer),
+        Depends(require_role(Role.SUPERADMIN)), 
+    ]
+)
 
 
 @superadmin.patch(
     "/edit-rights/{user_id}",
-    dependencies=[Depends(require_role("superadmin"))]
 )
 async def assign_admin(
     user_id: uuid.UUID,

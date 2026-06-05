@@ -3,19 +3,25 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from src.admin.permissions import require_role
 from src.admin.schemas.schedules import ScheduleUpdate, ScheduleCreate, ScheduleResponse, SchedulesListResponse
+from src.auth.enum import Role
 from src.dependencies import db_connection
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from src.schedules.models import Schedule
+from src.auth.services import http_bearer
 
 
-admin_schedule = APIRouter()
+admin_schedule = APIRouter(
+    dependencies=[
+        Depends(http_bearer),
+        Depends(require_role(Role.SUPERADMIN, Role.ADMIN)), 
+    ]
+)
 
 
 @admin_schedule.post(
     path='/schedules',
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def add_schedule(
     db: db_connection,
@@ -38,7 +44,6 @@ async def add_schedule(
 @admin_schedule.get(
     path="/schedules",
     response_model=list[SchedulesListResponse],
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def get_all_schedules(
     db: db_connection,
@@ -52,7 +57,6 @@ async def get_all_schedules(
 @admin_schedule.get(
     path="/schedules/{schedule_id}",
     response_model=ScheduleResponse,
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def get_schedules(
     schedule_id: uuid.UUID,
@@ -70,7 +74,6 @@ async def get_schedules(
     
 @admin_schedule.patch(
     path="/schedules/{schedule_id}",
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def edit_schedule(
     db: db_connection,

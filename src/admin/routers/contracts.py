@@ -2,6 +2,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from starlette.concurrency import run_in_threadpool
+from src.auth.enum import Role
 from src.config import config
 from src.admin.permissions import require_role
 from src.admin.schemas.contracts import ContractCreate, ContractUpdate, ContractResponse, ContractsListResponse
@@ -10,9 +11,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from src.parents.models import Contract
 from src.admin.file_utils import process_document, delete_document
+from src.auth.services import http_bearer
 
-
-admin_contract = APIRouter()
+admin_contract = APIRouter(
+    dependencies=[
+        Depends(http_bearer),
+        Depends(require_role(Role.SUPERADMIN, Role.ADMIN)), 
+    ]
+)
 
 
 ALLOWED_MIME_TYPES = {
@@ -27,7 +33,6 @@ ALLOWED_MIME_TYPES = {
 
 @admin_contract.post(
     path="/contracts",
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def add_contract(
     db: db_connection,
@@ -52,7 +57,6 @@ async def add_contract(
 
 @admin_contract.patch(
     path='/contracts/{contract_id}/document',
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def add_contract_document(
     db: db_connection,
@@ -107,8 +111,6 @@ async def add_contract_document(
 
 @admin_contract.patch(
     path="/contracts/{contract_id}",
-    dependencies=[Depends(require_role("superadmin", "admin"))]
-
 )
 async def edit_contract(
     db: db_connection,
@@ -138,7 +140,6 @@ async def edit_contract(
 @admin_contract.get(
     path="/contracts",
     response_model=list[ContractsListResponse],
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def get_all_contracts(
     db: db_connection,
@@ -152,7 +153,6 @@ async def get_all_contracts(
 @admin_contract.get(
     path="/contracts/{contract_id}",
     response_model=ContractResponse,
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def get_contract(
     contract_id: uuid.UUID,
@@ -170,7 +170,6 @@ async def get_contract(
 
 @admin_contract.patch(
     path="/parents/{parent_id}/deactivate",
-    dependencies=[Depends(require_role("superadmin", "admin"))]
 )
 async def deactivate_contract(
     db: db_connection,
