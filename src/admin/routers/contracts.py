@@ -17,7 +17,8 @@ admin_contract = APIRouter(
     dependencies=[
         Depends(http_bearer),
         Depends(require_role(Role.SUPERADMIN, Role.ADMIN)), 
-    ]
+    ],
+    prefix="/contracts"
 )
 
 
@@ -32,7 +33,7 @@ ALLOWED_MIME_TYPES = {
 
 
 @admin_contract.post(
-    path="/contracts",
+    path=""
 )
 async def add_contract(
     db: db_connection,
@@ -56,7 +57,7 @@ async def add_contract(
 
 
 @admin_contract.patch(
-    path='/contracts/{contract_id}/document',
+    path='/{contract_id}/document',
 )
 async def add_contract_document(
     db: db_connection,
@@ -110,7 +111,7 @@ async def add_contract_document(
 
 
 @admin_contract.patch(
-    path="/contracts/{contract_id}",
+    path="/{contract_id}",
 )
 async def edit_contract(
     db: db_connection,
@@ -138,7 +139,7 @@ async def edit_contract(
 
 
 @admin_contract.get(
-    path="/contracts",
+    path="",
     response_model=list[ContractsListResponse],
 )
 async def get_all_contracts(
@@ -169,7 +170,7 @@ async def get_contract(
 
 
 @admin_contract.patch(
-    path="/parents/{parent_id}/deactivate",
+    path="/{contract_id}/deactivate",
 )
 async def deactivate_contract(
     db: db_connection,

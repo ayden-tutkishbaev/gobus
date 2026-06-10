@@ -8,6 +8,8 @@ BASE_DIR = Path(__file__).parent.parent
 
 
 class Config(BaseSettings):
+    api_v1_prefix: str = "/api/v1"
+    
     DB_NAME: str
     DB_USER: str
     DB_PORT: int
@@ -20,7 +22,6 @@ class Config(BaseSettings):
     
     REDIS_HOST: str
     REDIS_PORT: int
-        
     
     private_key_path: Path = BASE_DIR / "certs" / "jwt-private.pem"
     public_key_path: Path = BASE_DIR / "certs" / "jwt-public.pem"

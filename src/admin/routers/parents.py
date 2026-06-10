@@ -14,12 +14,13 @@ admin_parent = APIRouter(
     dependencies=[
         Depends(http_bearer),
         Depends(require_role(Role.SUPERADMIN, Role.ADMIN)), 
-    ]
+    ],
+    prefix="/parents"
 )
 
 
 @admin_parent.post(
-    path='/parents',
+    path='',
 )
 async def add_parent(
     db: db_connection,
@@ -41,7 +42,7 @@ async def add_parent(
 
 
 @admin_parent.get(
-    path="/parents",
+    path="",
     response_model=list[ParentResponse],
 )
 async def get_all_parents(
@@ -54,7 +55,7 @@ async def get_all_parents(
 
 
 @admin_parent.get(
-    path="/parents/{parent_id}",
+    path="/{parent_id}",
     response_model=ParentResponse,
 )
 async def get_parent(
@@ -72,7 +73,7 @@ async def get_parent(
 
 
 @admin_parent.patch(
-    path="/parents/{parent_id}",
+    path="/{parent_id}",
 )
 async def edit_parents(
     db: db_connection,
@@ -100,7 +101,7 @@ async def edit_parents(
 
 
 @admin_parent.patch(
-    path="/parents/{parent_id}/deactivate",
+    path="/{parent_id}/deactivate",
 )
 async def deactivate_parent(
     db: db_connection,

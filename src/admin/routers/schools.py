@@ -15,12 +15,13 @@ admin_school = APIRouter(
     dependencies=[
         Depends(http_bearer),
         Depends(require_role(Role.SUPERADMIN, Role.ADMIN)), 
-    ]
+    ],
+    prefix="/schools"
 )
 
 
 @admin_school.post(
-    path='/schools',
+    path='',
 )
 async def add_school(
     db: db_connection,
@@ -41,7 +42,7 @@ async def add_school(
 
     
 @admin_school.get(
-    path="/schools",
+    path="",
     response_model=list[SchoolResponse],
 )
 async def get_schools(
@@ -54,7 +55,7 @@ async def get_schools(
 
 
 @admin_school.get(
-    path="/schools/{school_id}",
+    path="/{school_id}",
     response_model=SchoolResponse,
 )
 async def get_school(
@@ -72,7 +73,7 @@ async def get_school(
     
     
 @admin_school.patch(
-    path="/schools/{school_id}",
+    path="/{school_id}",
 )
 async def edit_school(
     db: db_connection,
@@ -100,7 +101,7 @@ async def edit_school(
 
 
 @admin_school.patch(
-    path="/schools/{school_id}/deactivate",
+    path="/{school_id}/deactivate",
 )
 async def deactivate_school(
     db: db_connection,

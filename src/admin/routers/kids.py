@@ -20,12 +20,13 @@ admin_kid = APIRouter(
     dependencies=[
         Depends(http_bearer),
         Depends(require_role(Role.SUPERADMIN, Role.ADMIN)), 
-    ]
+    ],
+    prefix="/kids"
 )
 
 
 @admin_kid.post(
-    path='/kids',
+    path='',
 )
 async def add_kid(
     db: db_connection,
@@ -72,7 +73,7 @@ async def add_kid(
 
 
 @admin_kid.patch(
-    path='/kids/{kid_id}/photo',
+    path='/{kid_id}/photo',
 )
 async def add_kid_picture(
     db: db_connection,
@@ -117,7 +118,7 @@ async def add_kid_picture(
     return chosen_kid
 
 
-@admin_kid.patch(path='/kids/{kid_id}')
+@admin_kid.patch(path='/{kid_id}')
 async def update_kid(
     kid_id: uuid.UUID,
     data_edited: KidUpdate,
@@ -150,7 +151,7 @@ async def update_kid(
     return kid
 
 
-@admin_kid.get(path="/kids", 
+@admin_kid.get(path="", 
                response_model=list[KidsListResponse],
 )
 async def get_kids(
@@ -167,7 +168,7 @@ async def get_kids(
     return result.scalars().all()
 
 
-@admin_kid.get(path="/kids/{kid_id}", 
+@admin_kid.get(path="/{kid_id}", 
                response_model=KidResponse,)
 async def get_kid(
     kid_id: uuid.UUID, 

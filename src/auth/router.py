@@ -1,21 +1,13 @@
-import uuid
-import pyotp
-
 from fastapi import APIRouter, Form, HTTPException, status, Depends
-from sqlalchemy import select, func
+from sqlalchemy import select
 
-from src.admin.permissions import require_role
-
-from src.auth.requests import get_user_by_username
-from src.auth.schemas import TokenInfo, UserCreate, UserSchema
+from src.auth.schemas import TokenInfo, UserSchema
 from src.auth.models import User
-from src.auth.enum import Role
-from src.auth.security import hash_password
 from src.config import config
 
-from typing import Annotated
-from src.database.tools import tashkent_now
 from src.dependencies import db_connection, redis_connection
+
+from sqlalchemy.orm import selectinload
 
 from time import time
 
@@ -32,14 +24,16 @@ from src.auth.services import (
 
 from src.auth.sms_codes import generate_otp, otp_key, lock_key, resend_key
 
+
 user = APIRouter(
     dependencies=[Depends(http_bearer)],
+    prefix="/auth",
+    tags=['Auth']
 )
-    
+
 
 @user.post("/login/request-sms")
 async def auth_user_login_and_request_sms_code(
-    db: db_connection,
     redis: redis_connection,
     user: UserSchema = Depends(validate_auth_user),
 ):
@@ -94,7 +88,9 @@ async def verify_sms_code_and_issue_jwt(
                             detail="Invalid or expired code")
         
     result = await db.execute(
-        select(User).where(User.phone_number == user_phone_number)
+        select(User)
+        .options(selectinload(User.staff))
+        .where(User.phone_number == user_phone_number)
     )
     user = result.scalars().first()
 
@@ -142,62 +138,4 @@ async def auth_user_check_self_info(
     payload: dict = Depends(get_current_token_payload),
     user: UserSchema = Depends(get_auth_user_from_token_of_type(ACCESS_TOKEN_TYPE)),
 ):
-    iat = payload.get('iat')
-    return {
-        "id": user.id,
-        "username": user.username,
-        "logged_in_at": iat,
-        "role": user.role,
-        "phone_number": user.phone_number,
-    }
-
-
-@user.post(path="/create",
-          response_model=UserSchema,
-          status_code=status.HTTP_201_CREATED,
-          dependencies=[Depends(require_role("superadmin"))]
-)
-async def create_user(user: UserCreate, db: db_connection):
-    result = await db.execute(
-        select(User).where(User.username == user.username),
-    )
-    existing_user = result.scalars().first()
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already exists!"
-        )
-        
-    new_user = User(
-        username=user.username.lower(),
-        phone_number=user.phone_number,
-        password_hashed=hash_password(user.password),
-        role=user.role,
-    )    
-
-    db.add(new_user)
-    await db.commit()
-    await db.refresh(new_user)
-    return new_user
-    
-
-    
-@user.patch(path="/{user_id}/deactivate",
-          dependencies=[Depends(require_role("superadmin"))])
-async def deactivate_user(user_id: uuid.UUID, db: db_connection):
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalars().first()
-    
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail="User not found")  
-    if user.role == Role.SUPERADMIN:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Cannot deactivate superadmin")
-    if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="User has already been deactivated")
-        
-    user.is_active = False
-    await db.commit()
-    return {"detail": "User has been deactivated"}
+    return user.model_copy(update={"logged_in_at": payload.get("iat")})

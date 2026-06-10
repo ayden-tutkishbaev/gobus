@@ -1,3 +1,5 @@
+import uuid
+
 from jwt.exceptions import InvalidTokenError
 from fastapi import HTTPException, status, Depends, Form
 from fastapi.security import (
@@ -5,12 +7,12 @@ from fastapi.security import (
     OAuth2PasswordBearer
 )
 
-from src.auth.requests import get_user_by_username
+from src.auth.requests import get_user_by_id, get_user_by_username
 from src.dependencies import db_connection, redis_connection
 
 from src.auth import security
 
-from src.auth.schemas import UserSchema
+from src.auth.schemas import StaffModel, UserSchema
 from src.config import config
 
 from datetime import timedelta
@@ -40,7 +42,7 @@ async def validate_auth_user(
         headers={'WWW-Authenticate': 'Basic'}
     )
     user = await get_user_by_username(session, username)
-    if not user:
+    if not user or not user.is_active:
         raise unauthorized_exception
     
     if not security.validate_password(
@@ -84,17 +86,24 @@ def validate_token_type(payload: dict, token_type: str) -> bool:
     
 
 async def get_user_by_token_sub(payload: dict, session: db_connection) -> UserSchema:
-    username: str | None = payload.get("sub")
-    if not username:
+    user_id: str | None = payload.get("sub")
+    if not user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     
-    user = await get_user_by_username(session, username)
+    user = await get_user_by_id(session, uuid.UUID(user_id))
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     
-    return UserSchema.model_validate(user)
-    
-    
+    staff_obj = StaffModel.model_validate(user.staff) if user.staff else None
+
+    return UserSchema(
+        id=user.id,
+        username=user.username,
+        role=user.role,
+        phone_number=user.phone_number,
+        is_active=user.is_active,
+        staff=staff_obj,
+    )
     # username: str | None = payload.get("sub")
     # if user := users_db.get(username):
     #     return user
@@ -144,8 +153,10 @@ def create_jwt(
 
 def create_access_token(user: UserSchema) -> str:
     jwt_payload = {
-        "sub": user.username,
+        "sub": str(user.id),
         "username": user.username,
+        "role": user.role,
+        "staff_id": str(user.staff.id) if user.staff else None,
     }    
     return create_jwt(token_type=ACCESS_TOKEN_TYPE, token_data=jwt_payload,
                       lifetime_min=config.access_token_lifetime)
@@ -153,8 +164,10 @@ def create_access_token(user: UserSchema) -> str:
 
 def create_refresh_token(user: UserSchema) -> str:
     jwt_payload = {
-        "sub": user.username,
+        "sub": str(user.id),
         "username": user.username,
+        "role": user.role,
+        "staff_id": str(user.staff.id) if user.staff else None,
     }
     return create_jwt(token_type=REFRESH_TOKEN_TYPE, token_data=jwt_payload, 
                       lifetime_timedelta=timedelta(minutes=config.refresh_token_lifetime),)

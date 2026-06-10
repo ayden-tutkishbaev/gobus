@@ -14,6 +14,7 @@ class Route(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True,
                                         default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(240), nullable=False)
+    # type (h2s, s2h) - TBD
     estimated_duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     
@@ -26,7 +27,7 @@ class Route(Base):
     driver: Mapped["Staff"] = relationship(back_populates='driver_routes', foreign_keys=[driver_id])
     babysitter: Mapped["Staff"] = relationship(back_populates='babysitter_routes', foreign_keys=[babysitter_id])
     transport: Mapped["Transport"] = relationship(back_populates='routes')
-    schedules: Mapped[list["Schedule"]] = relationship(back_populates='route')
+    trips: Mapped[list["Trip"]] = relationship(back_populates='route')
     
     
 class Transport(Base):

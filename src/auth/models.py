@@ -1,3 +1,5 @@
+from typing import Optional
+
 from src.database.core import Base
 import uuid
 from datetime import datetime
@@ -5,7 +7,7 @@ from src.auth.enum import Role
 from src.database.tools import tashkent_now
 
 from sqlalchemy import DateTime, LargeBinary, String, Boolean, Enum, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
 class User(Base):
@@ -21,7 +23,8 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     last_login: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=tashkent_now, nullable=True)
     
-    # created_by_UUID: Mapped[] # TODO: THINK 
-    
-    
+    staff: Mapped[Optional["Staff"]] = relationship(
+        back_populates="user",
+        uselist=False
+    )
     

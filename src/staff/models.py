@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 from src.database.core import Base
 import uuid
@@ -6,7 +7,7 @@ from datetime import date, datetime
 from src.staff.enum import StaffRole, ViolationType
 from src.database.tools import tashkent_now
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, Date, Boolean, Enum, Float, Table, Column, UUID
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, Date, Boolean, Enum, Float, Table, Column, UUID, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.routes.models import Route
@@ -24,16 +25,21 @@ class Staff(Base):
     profile_photo_url: Mapped[str] = mapped_column(String(400), nullable=True)
     staff_type: Mapped[StaffRole] = mapped_column(Enum(StaffRole))
     date_of_birth: Mapped[date] = mapped_column(Date, nullable=False)
-    phone_number: Mapped[str] = mapped_column(String(90), nullable=False) # REMOVE
+    # phone_number: Mapped[str] = mapped_column(String(90), nullable=False) # REMOVE
     salary: Mapped[int] = mapped_column(Integer, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     registered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=tashkent_now)
+    
+    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
 
+    user: Mapped[Optional["User"]] = relationship(back_populates="staff")
     driver_routes: Mapped[list[Route]] = relationship(back_populates='driver', foreign_keys="Route.driver_id")
     babysitter_routes: Mapped[list[Route]] = relationship(back_populates='babysitter', foreign_keys="Route.babysitter_id")
     violations: Mapped[list[Violation]] = relationship(back_populates='recipient', foreign_keys="Violation.recipient_id")
     violations_given_to: Mapped[list[Violation]] = relationship(back_populates='recorded_by', foreign_keys="Violation.recorded_by_id")
     attendance_records: Mapped[list[Attendance]] = relationship(back_populates='marked_by')
+
+    __table_args__ = (UniqueConstraint("user_id"),)
 
 
 class Violation(Base):

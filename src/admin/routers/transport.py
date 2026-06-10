@@ -20,12 +20,13 @@ admin_transport = APIRouter(
     dependencies=[
         Depends(http_bearer),
         Depends(require_role(Role.SUPERADMIN, Role.ADMIN)), 
-    ]
+    ],
+    prefix="/transport"
 )
 
 
 @admin_transport.post(
-    path='/transport',
+    path='',
 )
 async def add_transport(
     db: db_connection,
@@ -47,7 +48,7 @@ async def add_transport(
 
 
 @admin_transport.patch(
-    path='/transport/{transport_id}/photo',
+    path='/{transport_id}/photo',
 )
 async def add_transport_picture(
     db: db_connection,
@@ -90,7 +91,7 @@ async def add_transport_picture(
 
 
 @admin_transport.get(
-    path="/transport",
+    path="",
     response_model=list[TransportResponse],
 )
 async def get_all_transports(
@@ -103,7 +104,7 @@ async def get_all_transports(
 
 
 @admin_transport.get(
-    path="/transport/{transport_id}",
+    path="/{transport_id}",
     response_model=TransportResponse,
 )
 async def get_transport(
@@ -121,7 +122,7 @@ async def get_transport(
 
 
 @admin_transport.patch(
-    path="/transport/{transport_id}",
+    path="/{transport_id}",
 )
 async def edit_transport(
     db: db_connection,
@@ -149,7 +150,7 @@ async def edit_transport(
 
 
 @admin_transport.patch(
-    path="/transport/{transport_id}/deactivate",
+    path="/{transport_id}/deactivate",
 )
 async def deactivate_transport(
     db: db_connection,

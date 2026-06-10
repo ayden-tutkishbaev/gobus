@@ -32,7 +32,7 @@ class KidUpdate(AppBaseModel):
     first_name: str | None = Field(None, min_length=1, max_length=260)
     middle_name: str | None = Field(None, min_length=1, max_length=260)
     phone_number: str | None = Field(None, min_length=1, max_length=90)
-    home_address: str | None =  Field(min_length=1, max_length=260)
+    home_address: str | None =  Field(None, min_length=1, max_length=260)
     
     school_id: uuid.UUID | None = None
     route_id: uuid.UUID | None = None

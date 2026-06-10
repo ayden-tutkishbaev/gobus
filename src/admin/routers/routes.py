@@ -18,13 +18,14 @@ admin_route = APIRouter(
     dependencies=[
         Depends(http_bearer),
         Depends(require_role(Role.SUPERADMIN, Role.ADMIN)), 
-    ]
+    ],
+    prefix="/routes"
 )
 
 
 
 @admin_route.post(
-    path='/routes',
+    path='',
 )
 async def add_route(
     db: db_connection,
@@ -37,7 +38,7 @@ async def add_route(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Driver not found")
     
-    if not not babysitter:
+    if not babysitter:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Babysitter not found")
     
@@ -62,7 +63,7 @@ async def add_route(
 
 
 @admin_route.patch(
-    path="/routes/{route_id}",
+    path="/{route_id}",
 )
 async def edit_route(
     db: db_connection,
@@ -90,7 +91,7 @@ async def edit_route(
 
 
 @admin_route.get(
-    path="/routes",
+    path="",
     response_model=list[RouteListResponse],
 )
 async def get_all_routes(
@@ -103,7 +104,7 @@ async def get_all_routes(
 
 
 @admin_route.get(
-    path="/routes/{route_id}",
+    path="/{route_id}",
     response_model=RouteResponse,
 )
 async def get_route(
@@ -123,7 +124,7 @@ async def get_route(
 
 
 @admin_route.patch(
-    path="/routes/{route_id}/deactivate",
+    path="/{route_id}/deactivate",
 )
 async def deactivate_route(
     db: db_connection,

@@ -16,12 +16,13 @@ admin_teacher = APIRouter(
     dependencies=[
         Depends(http_bearer),
         Depends(require_role(Role.SUPERADMIN, Role.ADMIN)), 
-    ]
+    ],
+    prefix="/teachers"
 )
 
 
 @admin_teacher.post(
-    path='/teachers',
+    path='',
 )
 async def add_teacher(
     db: db_connection,
@@ -43,7 +44,7 @@ async def add_teacher(
 
 
 @admin_teacher.patch(
-    path="/teachers/{teacher_id}",
+    path="/{teacher_id}",
 )
 async def edit_teacher(db: db_connection,
     data_edited: TeacherUpdate, 
@@ -70,7 +71,7 @@ async def edit_teacher(db: db_connection,
 
 
 @admin_teacher.get(
-    path="/teachers",
+    path="",
     response_model=list[TeacherListResponse],
 )
 async def get_all_teachers(
@@ -83,7 +84,7 @@ async def get_all_teachers(
 
 
 @admin_teacher.get(
-    path="/teachers/{teacher_id}",
+    path="/{teacher_id}",
     response_model=TeacherResponse,
 )
 async def get_teacher(
@@ -101,7 +102,7 @@ async def get_teacher(
 
 
 @admin_teacher.patch(
-    path="/teacher/{teacher_id}/deactivate",
+    path="/{teacher_id}/deactivate",
 )
 async def deactivate_teacher(
     db: db_connection,
